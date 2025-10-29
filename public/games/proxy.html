@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy - nark's methods</title>
+    <link rel="icon" href="https://i.postimg.cc/hPFZ97ds/images-modified.png" type="image/png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #3a3a3a;
+            font-family: 'Rajdhani', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .proxy-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 15px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .back-button {
+            background-color: black;
+            color: red;
+            padding: 10px 18px;
+            font-size: 14px;
+            border: 2px solid crimson;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            transition: background-color 0.3s;
+        }
+        
+        .back-button:hover {
+            background-color: #1a1a1a;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 12px 15px;
+            background-color: #2a2a2a;
+            border: 2px solid crimson;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Rajdhani', sans-serif;
+            outline: none;
+        }
+        
+        .url-input::placeholder {
+            color: #888;
+        }
+        
+        .go-button {
+            background-color: black;
+            color: red;
+            padding: 12px 25px;
+            font-size: 14px;
+            border: 2px solid crimson;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Rajdhani', sans-serif;
+            transition: background-color 0.3s;
+        }
+        
+        .go-button:hover {
+            background-color: #1a1a1a;
+        }
+        
+        .content-area {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .proxy-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .proxy-info {
+            text-align: center;
+            padding: 50px 20px;
+            color: crimson;
+            font-size: 1.2rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+        }
+        
+        .proxy-info h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .proxy-info p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .note {
+            background-color: rgba(255, 0, 0, 0.1);
+            border: 2px solid crimson;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .error-message {
+            background-color: rgba(255, 0, 0, 0.1);
+            border: 2px solid crimson;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="proxy-header">
+        <a href="../index.html" class="back-button">← Back</a>
+        <input type="text" id="urlInput" class="url-input" placeholder="Enter website URL or search term..." autocomplete="off">
+        <button class="go-button" onclick="navigate()">Go</button>
+    </div>
+    
+    <div class="content-area">
+        <div id="proxyInfo" class="proxy-info">
+            <h2>Web Proxy & Search</h2>
+            <p>Enter a website URL to browse directly, or type any search term to search with Google.</p>
+            <p style="font-size: 0.95rem; margin-top: 25px;">
+                <strong>Examples:</strong><br>
+                • google.com<br>
+                • coolmathgames.com<br>
+                • wikipedia.org
+            </p>
+            <div class="note">
+                <strong>Note:</strong> Some websites (like YouTube, Netflix, etc.) block embedding for security reasons and may not work in this proxy.
+            </div>
+            <p id="swStatus" style="font-size: 0.85rem; margin-top: 20px; color: #888;">
+                Initializing proxy...
+            </p>
+        </div>
+        
+        <iframe id="proxyFrame" class="proxy-frame" style="display: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </div>
+    
+    <script>
+        const urlInput = document.getElementById('urlInput');
+        const proxyFrame = document.getElementById('proxyFrame');
+        const proxyInfo = document.getElementById('proxyInfo');
+        const swStatus = document.getElementById('swStatus');
+        
+        let serviceWorkerReady = false;
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('[v0] Service Worker registered:', registration);
+                    swStatus.textContent = 'Proxy ready!';
+                    swStatus.style.color = '#4CAF50';
+                    serviceWorkerReady = true;
+                    
+                    return navigator.serviceWorker.ready;
+                })
+                .then(() => {
+                    console.log('[v0] Service Worker is active and ready');
+                })
+                .catch(error => {
+                    console.error('[v0] Service Worker registration failed:', error);
+                    swStatus.textContent = 'Proxy initialization failed. Using fallback mode.';
+                    swStatus.style.color = '#ff6b6b';
+                });
+        } else {
+            swStatus.textContent = 'Service Workers not supported. Using fallback mode.';
+            swStatus.style.color = '#ff6b6b';
+        }
+        
+        function isURL(str) {
+            return str.includes('.') && !str.includes(' ');
+        }
+        
+        function getYouTubeVideoId(url) {
+            // Match youtube.com/watch?v=VIDEO_ID
+            let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (match) {
+                return match[1];
+            }
+            return null;
+        }
+        
+        function navigate() {
+            const input = urlInput.value.trim();
+            
+            if (!input) {
+                return;
+            }
+            
+            let targetUrl;
+            
+            if (isURL(input)) {
+                // It's a URL
+                if (!input.startsWith('http://') && !input.startsWith('https://')) {
+                    targetUrl = 'https://' + input;
+                } else {
+                    targetUrl = input;
+                }
+                
+                const videoId = getYouTubeVideoId(targetUrl);
+                if (videoId) {
+                    targetUrl = `https://www.youtube.com/embed/${videoId}`;
+                    console.log('[v0] Converted YouTube URL to embed format:', targetUrl);
+                }
+            } else {
+                // It's a search term - use Google
+                targetUrl = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(input);
+            }
+            
+            proxyInfo.style.display = 'none';
+            proxyFrame.style.display = 'block';
+            proxyFrame.src = targetUrl;
+        }
+        
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                navigate();
+            }
+        });
+        
+        urlInput.focus();
+    </script>
+</body>
+</html>
