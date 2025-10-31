@@ -291,7 +291,7 @@ const ProxyPage: React.FC<{ onBack: () => void; initialQuery: string }> = ({ onB
             src={frameUrl}
             className="w-full h-full border-0 bg-white"
             allow="accelerometer autoplay clipboard-write encrypted-media gyroscope picture-in-picture web-share"
-            allowFullScreen={true}
+            allowFullScreen
           />
         )}
       </div>
