@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Search, ChevronDown } from "lucide-react"
 
-function App() {
+const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<"home" | "proxy">("home")
   const [initialSearchQuery, setInitialSearchQuery] = useState("")
   const [showGamesDropdown, setShowGamesDropdown] = useState(false)
@@ -138,7 +138,7 @@ function App() {
   )
 }
 
-function ProxySearchBar({ onSearch }: { onSearch: (query: string) => void }) {
+const ProxySearchBar: React.FC<{ onSearch: (query: string) => void }> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("")
 
   const handleSearch = () => {
@@ -188,7 +188,7 @@ function ProxySearchBar({ onSearch }: { onSearch: (query: string) => void }) {
   )
 }
 
-function ProxyPage({ onBack, initialQuery }: { onBack: () => void; initialQuery: string }) {
+const ProxyPage: React.FC<{ onBack: () => void; initialQuery: string }> = ({ onBack, initialQuery }) => {
   const [url, setUrl] = useState(initialQuery)
   const [showFrame, setShowFrame] = useState(false)
   const [frameUrl, setFrameUrl] = useState("")
@@ -291,7 +291,7 @@ function ProxyPage({ onBack, initialQuery }: { onBack: () => void; initialQuery:
             src={frameUrl}
             className="w-full h-full border-0 bg-white"
             allow="accelerometer autoplay clipboard-write encrypted-media gyroscope picture-in-picture web-share"
-            allowFullScreen
+            allowFullScreen={true}
           />
         )}
       </div>
