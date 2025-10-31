@@ -251,7 +251,7 @@ function ProxyPage({ onBack, initialQuery }: { onBack: () => void; initialQuery:
           autoFocus
         />
         <button
-          onClick={navigate}
+          onClick={() => navigate()}
           className="bg-black text-red-600 px-6 py-3 rounded border-2 border-[crimson] font-bold hover:bg-[#1a1a1a] transition-colors"
           style={{ fontFamily: "Rajdhani, sans-serif" }}
         >
@@ -290,7 +290,7 @@ function ProxyPage({ onBack, initialQuery }: { onBack: () => void; initialQuery:
           <iframe
             src={frameUrl}
             className="w-full h-full border-0 bg-white"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="accelerometer autoplay clipboard-write encrypted-media gyroscope picture-in-picture web-share"
             allowFullScreen
           />
         )}
